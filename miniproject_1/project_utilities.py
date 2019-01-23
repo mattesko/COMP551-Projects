@@ -108,11 +108,10 @@ class LinearRegressionModel:
     def fit(self, X, y, beta=1, eta=1, epsilon=0.0001):
         assert type(X) == pd.core.frame.DataFrame , 'Expected X to be pandas.core.frame.DataFrame but got ' + str(type(X))
 
-        _, columns = X.shape
+        rows, columns = X.shape
 
         # Bias must be included
-        for i in range(len(X)):
-            X[i]['bias'] = 1
+        X['bias'] = pd.Series(np.ones(rows), index=X.index)
 
         weights_old = np.ones(columns)
         weights = np.zeros(columns)
