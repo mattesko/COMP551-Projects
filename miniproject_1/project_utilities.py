@@ -101,5 +101,34 @@ def insert_top_words_count(data_list, top_words):
     
     return result
 
+class LinearRegressionModel:
 
+    weight_estimates = None
 
+    def fit(self, X, y, beta=1, eta=1, epsilon=0.0001):
+        assert type(X) == pd.core.frame.DataFrame , 'Expected X to be pandas.core.frame.DataFrame but got ' + str(type(X))
+
+        _, columns = X.shape
+
+        # Bias must be included
+        for i in range(len(X)):
+            X[i]['bias'] = 1
+
+        weights_old = np.ones(columns)
+        weights = np.zeros(columns)
+
+        X_values = X.values
+        
+        while True:
+
+            alpha = eta / (1 + beta)
+            weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y))
+
+            squared_difference = np.linalg.norm(weights - weights_old)
+            weights_old = weights        
+            
+            if squared_difference < epsilon:
+                break
+        
+        self.weight_estimates = weights
+        return self
