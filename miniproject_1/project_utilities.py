@@ -101,6 +101,19 @@ def insert_top_words_count(data_list, top_words):
     
     return result
 
+def mse(y_true, y_predicted):
+    """
+    Compute Mean Squared Error of true and predicted values
+
+    Arguments:
+    y_true -- The true values
+    y_predicted -- The predicted values
+
+    Return:
+    Mean Squared Error value
+    """
+    return ((y_true - y_predicted) ** 2).mean(axis=0)
+
 class LinearRegressionModel:
 
     weight_estimates = None
@@ -127,3 +140,17 @@ class LinearRegressionModel:
         
         self.weight_estimates = weights
         return self
+
+    def predict(self, X_values):
+        """
+        Predict values using linear regression model's estimated weights solution
+
+        Arguments:
+        X_values -- Dataset to solve predictions on
+
+        Return:
+        List of predictions for each example within X_values
+        """
+        assert X_values.shape[1] == len(self.weight_estimates), 'Expected dataset of ' + str(len(self.weight_estimates)) + ' number of features but got ' + str(X_values.shape[1])
+
+        return np.dot(X_values, self.weight_estimates)
