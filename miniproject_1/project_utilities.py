@@ -105,28 +105,24 @@ class LinearRegressionModel:
 
     weight_estimates = None
 
-    def fit(self, X, y, beta=1, eta=1, epsilon=0.0001):
-        assert type(X) == pd.core.frame.DataFrame , 'Expected X to be pandas.core.frame.DataFrame but got ' + str(type(X))
+    def fit(self, X_values, y_values, beta=10, eta=0.001, epsilon=0.01):
+        assert X_values.shape[0] == len(y_values) , 'Number of rows in X must equal to length of y'
 
-        rows, columns = X.shape
-
-        # Bias must be included
-        X['bias'] = pd.Series(np.ones(rows), index=X.index)
-
+        rows, columns = X_values.shape
         weights_old = np.ones(columns)
         weights = np.zeros(columns)
+        i = 1
 
-        X_values = X.values
-        
         while True:
 
-            alpha = eta / (1 + beta)
-            weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y))
+            alpha = eta / (1 + beta * i)
+            weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y_values))
 
-            squared_difference = np.linalg.norm(weights - weights_old)
-            weights_old = weights        
+            weights_diff_norm = np.linalg.norm(weights - weights_old)
+            weights_old = weights
+            i+=1
             
-            if squared_difference < epsilon:
+            if weights_diff_norm < epsilon:
                 break
         
         self.weight_estimates = weights
