@@ -4,6 +4,7 @@ from operator import itemgetter
 import numpy as np
 import pandas as pd
 from IPython.display import clear_output
+import time
 
 def process_data(data_list):
     """
@@ -130,6 +131,7 @@ class LinearRegressionModel:
         weights = np.zeros(columns)
         i = 1
 
+        start_time = time.time()
         while True:
 
             alpha = step_size / (1 + decay_factor * i)
@@ -144,6 +146,7 @@ class LinearRegressionModel:
                 print(weights_diff_norm)
 
             if weights_diff_norm < error_threshold:
+                print('Time Elapsed: %f seconds' % (time.time() - start_time))
                 break
         
         self.weight_estimates = weights
