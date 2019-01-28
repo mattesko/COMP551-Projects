@@ -3,6 +3,7 @@ from collections import Counter
 from operator import itemgetter
 import numpy as np
 import pandas as pd
+from IPython.display import clear_output
 
 def process_data(data_list):
     """
@@ -17,8 +18,11 @@ def process_data(data_list):
     # Deep copy data as to avoid overwriting which could cause unintented side effects
     result = copy.deepcopy(data_list)
     for index, value in enumerate(result):
+        text_words = copy.deepcopy(value['text'])
         result[index]['text'] = value['text'].lower().split(' ')
         result[index]['is_root'] = int(value['is_root'] == 'true')
+        result[index]['has_exclamation'] = int("!" in text_words) 
+        result[index]['has_question_mark'] = int("?" in text_words)
         
     return result
 
@@ -118,7 +122,7 @@ class LinearRegressionModel:
 
     weight_estimates = None
 
-    def fit(self, X_values, y_values, beta=10, eta=0.001, epsilon=0.01):
+    def fit(self, X_values, y_values, step_size=0.001, decay_factor=10, error_threshold=0.01, debug=False):
         assert X_values.shape[0] == len(y_values) , 'Number of rows in X must equal to length of y'
 
         rows, columns = X_values.shape
@@ -128,14 +132,18 @@ class LinearRegressionModel:
 
         while True:
 
-            alpha = eta / (1 + beta * i)
+            alpha = step_size / (1 + decay_factor * i)
             weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y_values))
 
             weights_diff_norm = np.linalg.norm(weights - weights_old)
             weights_old = weights
             i+=1
             
-            if weights_diff_norm < epsilon:
+            if debug:
+                clear_output()
+                print(weights_diff_norm)
+
+            if weights_diff_norm < error_threshold:
                 break
         
         self.weight_estimates = weights
