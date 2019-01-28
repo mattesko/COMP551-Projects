@@ -18,8 +18,11 @@ def process_data(data_list):
     # Deep copy data as to avoid overwriting which could cause unintented side effects
     result = copy.deepcopy(data_list)
     for index, value in enumerate(result):
+        text_words = copy.deepcopy(value['text'])
         result[index]['text'] = value['text'].lower().split(' ')
         result[index]['is_root'] = int(value['is_root'] == 'true')
+        result[index]['has_exclamation'] = int("!" in text_words) 
+        result[index]['has_question_mark'] = int("?" in text_words)
         
     return result
 
