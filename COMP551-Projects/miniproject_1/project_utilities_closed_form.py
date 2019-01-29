@@ -3,8 +3,9 @@ from collections import Counter
 from operator import itemgetter
 import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords 
+import nltk
 
+#nltk.download('vader_lexicon')  # if you want to use  nltk.sentiment.vader, you need excute it 
 
 def process_data(data_list):
     """
@@ -19,10 +20,19 @@ def process_data(data_list):
     # Deep copy data as to avoid overwriting which could cause unintented side effects
     result = copy.deepcopy(data_list)
     for index, value in enumerate(result):
+        #result[index]['sentiment'] = abs(nltk_sentiment(value['text'])['compound'])  # run it if you want to add new feature "sentiment"
         result[index]['text'] = value['text'].lower().split(' ')
         result[index]['is_root'] = int(value['is_root'] == True)
         
     return result
+
+def nltk_sentiment(sentence):
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    nltk_sentiment = SentimentIntensityAnalyzer()
+    score = nltk_sentiment.polarity_scores(sentence)
+
+    return score
 
 def concatenate_all_text(data_list):
     """
@@ -130,9 +140,10 @@ def add_marks_feature (data_list):
     for index, value in enumerate (result):
         result[index]['has_exclamation'] = int("!" in value['text']) 
         result[index]['has_question_mark'] = int("?" in value['text'])
+        #result[index]['has_period'] = int("." in value['text'])
     return result
 
-def closedformLinearRegression (X,Y,x):
+def closedformLinearRegression (X,Y):
     """
     Function: Used to calculated the prediction output by linear Regression closed form
     
@@ -150,7 +161,11 @@ def closedformLinearRegression (X,Y,x):
     XTX_inverse = np.linalg.inv(XTX)
     XTY = XT.dot(Y)
     weight_coefficient = np.matmul(XTX_inverse,XTY)
-    pridiction = np.matmul(x,weight_coefficient)
+    
+    return weight_coefficient
+def making_prediction (X,weight_coefficient):
+
+    pridiction = np.matmul(X,weight_coefficient)
     return pridiction
 
 def mse(y_true, y_predicted):
@@ -166,44 +181,3 @@ def mse(y_true, y_predicted):
     """
     return ((y_true - y_predicted) ** 2).mean(axis=0)
 
-
-class LinearRegressionModel:
-
-    weight_estimates = None
-
-    def fit(self, X_values, y_values, beta=10, eta=0.001, epsilon=0.01):
-        assert X_values.shape[0] == len(y_values) , 'Number of rows in X must equal to length of y'
-
-        rows, columns = X_values.shape
-        weights_old = np.ones(columns)
-        weights = np.zeros(columns)
-        i = 1
-
-        while True:
-
-            alpha = eta / (1 + beta * i)
-            weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y_values))
-
-            weights_diff_norm = np.linalg.norm(weights - weights_old)
-            weights_old = weights
-            i+=1
-            
-            if weights_diff_norm < epsilon:
-                break
-        
-        self.weight_estimates = weights
-        return self
-
-    def predict(self, X_values):
-        """
-        Predict values using linear regression model's estimated weights solution
-
-        Arguments:
-        X_values -- Dataset to solve predictions on
-
-        Return:
-        List of predictions for each example within X_values
-        """
-        assert X_values.shape[1] == len(self.weight_estimates), 'Expected dataset of ' + str(len(self.weight_estimates)) + ' number of features but got ' + str(X_values.shape[1])
-
-        return np.dot(X_values, self.weight_estimates)
