@@ -123,10 +123,10 @@ class LinearRegressionModel:
 
     weight_estimates = None
 
-    def fit(self, X_values, y_values, step_size=0.001, decay_factor=10, error_threshold=0.01, debug=False):
+    def fit_gradient_descent(self, X_values, y_values, step_size=0.001, decay_factor=10, error_threshold=0.01, debug=False):
         assert X_values.shape[0] == len(y_values) , 'Number of rows in X must equal to length of y'
 
-        rows, columns = X_values.shape
+        _, columns = X_values.shape
         weights_old = np.ones(columns)
         weights = np.zeros(columns)
         i = 1
@@ -150,6 +150,25 @@ class LinearRegressionModel:
                 break
         
         self.weight_estimates = weights
+        return self
+
+    def fit_closed_form(self, X_values, y_values):
+        """
+        Calculate the prediction output by linear Regression closed form
+        
+        Argument:
+        X_values -- It is input of the training set, used to calculate weighting coeffcient
+        y_values -- It is output of the training set, used to calculate weighting coeffcient
+        
+        Return:
+        Closed form solution fitted model
+        """
+        
+        start_time = time.time()
+        weight_coefficients = np.matmul(np.linalg.inv(np.dot(X_values.T, X_values)), np.dot(X_values.T, y_values))
+        print('Time Elapsed: %f seconds' % (time.time() - start_time))
+
+        self.weight_estimates = weight_coefficients
         return self
 
     def predict(self, X_values):
