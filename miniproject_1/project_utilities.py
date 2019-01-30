@@ -132,10 +132,12 @@ class LinearRegressionModel:
         i = 1
 
         start_time = time.time()
+        Xt_X = np.dot(X_values.T, X_values)
+        Xt_y = np.dot(X_values.T, y_values)
         while True:
 
             alpha = step_size / (1 + decay_factor * i)
-            weights = weights_old - 2 * alpha * (np.dot(np.dot(X_values.T, X_values), weights_old) - np.dot(X_values.T, y_values))
+            weights = weights_old - 2 * alpha * (np.dot(Xt_X, weights_old) - Xt_y)
 
             weights_diff_norm = np.linalg.norm(weights - weights_old)
             weights_old = weights
