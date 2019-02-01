@@ -5,6 +5,16 @@ import numpy as np
 import pandas as pd
 from IPython.display import clear_output
 import time
+import nltk
+nltk.download('vader_lexicon')
+
+def nltk_sentiment(sentence):
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    nltk_sentiment = SentimentIntensityAnalyzer()
+    score = nltk_sentiment.polarity_scores(sentence)
+
+    return score
 
 def process_data(data_list):
     """
