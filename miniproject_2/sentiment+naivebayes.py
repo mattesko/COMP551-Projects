@@ -76,6 +76,27 @@ def train (all_words, neg_text, pos_text):
     return list_prob_pos, list_prob_neg
 
 
+def validate(validation_set, pos_prob_list, neg_prob_list, word_list):
+    counter = 0
+    val_count = 0
+    for text in validation_set:
+        text = text.lower()
+        prob_pos = 1
+        prob_neg = 1
+        for word_index, word in enumerate(word_list):
+            if (word in text):
+                prob_pos *= pos_prob_list[word_index]
+                prob_neg *= neg_prob_list[word_index]
+        res = 1 if (prob_pos > prob_neg) else 0
+        if (counter < 2500 and res ==0):
+            val_count += 1
+        if (counter >= 2500 and res ==1):
+            val_count += 1
+        counter +=1
+    return val_count / 5000
+
+        
+
 def test(text, pos_prob_list, neg_prob_list, word_list):
     '''
     Generate the probabilities of the testing text being positive or negative,
@@ -95,7 +116,19 @@ def test(text, pos_prob_list, neg_prob_list, word_list):
 
 def main():
     all_words, neg_text, pos_text = load_data()
-    list_prob_pos, list_prob_neg = train(all_words, neg_text, pos_text)
+    #Split to 10000 and 2500 for train and val
+    neg_text = np.array(neg_text)
+    neg_text_train, neg_text_val = np.split(neg_text, [10000])
+    pos_text = np.array(pos_text)
+    pos_text_train, pos_text_val = np.split(pos_text, [10000])
+
+    # val_set = neg_text_val + pos_text_val
+    val_set = np.append(neg_text_val,pos_text_val)
+    # print(neg_text_train.shape)
+    print("Loaded")
+    list_prob_pos, list_prob_neg = train(all_words, neg_text_train, pos_text_train)
+    accu = validate(val_set ,list_prob_pos, list_prob_neg, all_words)
+    print("accu is {}".format(accu))
 
     # We can save the results of training data and store it in npy
     # np.save("prob_pos_list.npy", list_prob_pos)
