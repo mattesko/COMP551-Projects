@@ -5,6 +5,12 @@ from sklearn import svm
 from sklearn import metrics
 from textblob import TextBlob
 from sklearn.model_selection import train_test_split
+import time
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.preprocessing import Normalizer
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.feature_extraction.text import CountVectorizer
+
 
 def load_data():
     filename_neg = "neg.txt"
@@ -32,14 +38,7 @@ def load_data():
         content = f.readlines()
     pos_text = [x.strip() for x in content]
 
-    # Load test set
-    test_path="../test/test/"
-    test_text = []
-    for filename in os.listdir(test_path):
-        with open(test_path + filename, 'r') as content_file:
-            content = content_file.read()
-            test_text.append(content)
-    return all_words, neg_text, pos_text, test_text
+    return all_words, neg_text, pos_text
 
 # Feature data generation
 def generate_matrix(all_words, neg_text, pos_text):
@@ -47,18 +46,21 @@ def generate_matrix(all_words, neg_text, pos_text):
     pos_size = len(pos_text)
     feature_size = len(all_words)
     x_matrix = np.zeros( shape=(total_data_size, feature_size))
-    y_matrix = np.zeros( shape=(total_data_size,1))
     for index, text in enumerate(pos_text):
+        if(index % 1000 == 0):
+          print("1000")
         text = text.lower()
+        text = text.split()
         for word_index, word in enumerate(all_words):
             x_matrix[index][word_index] = text.count(word)
-            y_matrix[index][0] = 1
     for index, text in enumerate(neg_text):
+        if(index % 1000 == 0):
+          print("1000")
         text = text.lower()
+        text = text.split()
         for word_index, word in enumerate(all_words):
             x_matrix[pos_size+index][word_index] = text.count(word)
-            y_matrix[pos_size+index][0] = 0
-    return x_matrix, y_matrix
+    return x_matrix
 
 def generate_matrix_test(all_words, test_data):
     total_data_size = len(test_data)
@@ -72,21 +74,27 @@ def generate_matrix_test(all_words, test_data):
 
 
 def main():
-    all_words, neg_text, pos_text, test_text= load_data()
+    all_words, neg_text, pos_text= load_data()
     print("Data Loaded")
-    x_matrix, y_matrix = generate_matrix(all_words, neg_text, pos_text)
+    x_matrix = generate_matrix(all_words, neg_text, pos_text)
+    y_matrix = [1]* len(pos_text) + [0]* len(neg_text)
     print("Training data generated")
-    # kaggle_test_data = generate_matrix_test(all_words, test_text)
-    print("Kaggle testing data generated")
+
     X_train, X_test, y_train, y_test = train_test_split(x_matrix, y_matrix, test_size=0.20,random_state=None)
-    print("Kernal creation")
-    clf = svm.SVC(kernel='linear')
-    print("Train start")
-    clf.fit(X_train, y_train)
-    print("Train ended")
-    y_pred = clf.predict(X_test)
-    # kaggle_res = clf.predict(kaggle_test_data)
-    print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+    start = time.time()
+    # tfidf_transformer = TfidfTransformer().fit(X_train)
+    # X_train_tfidf = tfidf_transformer.transform(X_train)
+    # X_test_tfidf = tfidf_transformer.transform(X_test)
+
+    normalizer_tranformer = Normalizer().fit(X=X_train)
+    X_train_normalized = normalizer_tranformer.transform(X_train)
+    X_test_normalized = normalizer_tranformer.transform(X_test)
+
+    clf = svm.LinearSVC().fit(X_train_normalized, y_train)
+    y_pred = clf.predict(X_test_normalized)
+    diff = time.time()-start
+    print(metrics.classification_report(y_test, y_pred,digits=5))
+    print("time: {}".format(diff))
 
 
 if __name__=="__main__":
