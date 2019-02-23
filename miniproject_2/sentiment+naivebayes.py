@@ -6,6 +6,13 @@ from textblob import TextBlob
 
 
 def load_data():
+    '''
+    Loading data from local files
+    to generate the list of 6000 sentiment words,
+    all negative training sample texts and all positive
+    training sample texts.
+
+    '''
     filename_neg = "neg.txt"
     filename_pos = "pos.txt"
     filename_neg_words = "negative-words.txt"
@@ -35,8 +42,13 @@ def load_data():
 
 
 
-# Train the weight matrix
+
 def train (all_words, neg_text, pos_text):
+    '''
+    Traing the probability weight matrix
+    return one probability list for positive review p(x|y=1)
+    and one probability list for negative review p(x|y=0)
+    '''
     # Pos matrix
     pos_matrix = np.zeros(shape=( len(pos_text), len(all_words)))
     for index, text in enumerate(pos_text):
@@ -47,6 +59,7 @@ def train (all_words, neg_text, pos_text):
     pos_matrix_count = np.sum(pos_matrix, axis=0)
     list_prob_pos = []
     for count in pos_matrix_count:
+        # Use Laplace-smoothing
         list_prob_pos.append( (count + 1)/ (len(pos_text) +2.0) )
 
     #Neg matrix
@@ -64,6 +77,10 @@ def train (all_words, neg_text, pos_text):
 
 
 def test(text, pos_prob_list, neg_prob_list, word_list):
+    '''
+    Generate the probabilities of the testing text being positive or negative,
+    and then compare both probability to determine if the testing text is pos/neg.
+    '''
     text = text.lower()
     prob_pos = 1
     prob_neg = 1
@@ -79,12 +96,14 @@ def test(text, pos_prob_list, neg_prob_list, word_list):
 def main():
     all_words, neg_text, pos_text = load_data()
     list_prob_pos, list_prob_neg = train(all_words, neg_text, pos_text)
+
+    # We can save the results of training data and store it in npy
     # np.save("prob_pos_list.npy", list_prob_pos)
     # np.save("prob_neg_list.npy", list_prob_neg)
     # list_prob_pos = np.load("prob_neg_list.npy")
     # list_prob_neg = np.load("prob_neg_list.npy")
 
-
+    # Do the test
     # with open('csvfile.csv','w') as file:
 
     #     test_path="../test/test/"
