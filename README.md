@@ -6,3 +6,6 @@ This particular project accomplishes to implement the closed-form solution appro
 
 ## IMDB Sentiment Analysis
 Under `miniproject_2`<br>
+
+## CNN on Modified MNIST
+Under `miniproject_3`<br>
