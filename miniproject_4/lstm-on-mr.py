@@ -1,4 +1,4 @@
-from comet_ml import Experiment
+# from comet_ml import Experiment
 import re
 import numpy as np
 import pandas as pd
@@ -152,13 +152,13 @@ model.compile(
 print(model.summary())
 
 # For logging Experiment
-experiment = Experiment(api_key="PqrK4iPuQntpHwzb6SvJuXbdh", project_name="COMP 551", workspace="mattesko")
-experiment.add_tag('LSTM-MR')
-experiment.log_dataset_info(name='MR')
+# experiment = Experiment(api_key="PqrK4iPuQntpHwzb6SvJuXbdh", project_name="COMP 551", workspace="mattesko")
+# experiment.add_tag('LSTM-MR')
+# experiment.log_dataset_info(name='MR')
 
 model.fit(X_train, y_train, batch_size=batch_size, epochs=10,  verbose=5, validation_data=(X_test, y_test))
 score, accuracy = model.evaluate(X_test, y_test, verbose=2, batch_size = batch_size)
 
-experiment.end()
+# experiment.end()
 print('Score: %.3f' % score)
 print('Validation Accuracy: %.3f' % accuracy)
